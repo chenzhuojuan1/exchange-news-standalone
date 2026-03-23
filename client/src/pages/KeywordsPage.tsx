@@ -16,7 +16,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tags, Plus, Pencil, Trash2, Loader2, ShieldCheck, ShieldX, ShieldAlert, Beaker } from "lucide-react";
+import { Tags, Plus, Pencil, Trash2, Loader2, ShieldCheck, ShieldX, ShieldAlert, Beaker, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -77,6 +77,15 @@ export default function KeywordsPage() {
     onError: (err) => toast.error(err.message),
   });
 
+  const resetMutation = trpc.setup.resetKeywordRules.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      utils.keywordRule.list.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
   function openCreate() {
     setEditingId(null);
     setForm({ ...defaultForm });
@@ -129,10 +138,32 @@ export default function KeywordsPage() {
             配置新闻筛选规则：包含规则决定保留哪些新闻，排除规则过滤噪音，白名单优先保留
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          添加规则
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setResetConfirmOpen(true)} disabled={resetMutation.isPending}>
+            {resetMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}
+            重置为默认规则
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            添加规则
+          </Button>
+        </div>
+
+      {/* 重置确认对话框 */}
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>重置关键词规则？</AlertDialogTitle>
+            <AlertDialogDescription>
+              这将删除所有现有规则，并重新导入最新的默认规则。此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={() => resetMutation.mutate()}>确认重置</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
 
       {/* 测试区域 */}

@@ -510,6 +510,26 @@ export interface FilterResult {
   excludeReason?: string;
 }
 
+/**
+ * 智能关键词匹配：
+ * - 短关键词（<=5字符且全字母）使用 word boundary 正则匹配，
+ *   避免 "SEC" 误匹配 "section"、"sector" 等
+ * - 长关键词或含空格的短语使用普通 includes 匹配
+ */
+function keywordMatchesTitle(keyword: string, titleLower: string): boolean {
+  const kwLower = keyword.toLowerCase().trim();
+  if (!kwLower) return false;
+
+  // 短缩写（<=5字符、纯字母）→ word boundary 正则
+  if (kwLower.length <= 5 && /^[a-z]+$/i.test(kwLower)) {
+    const regex = new RegExp(`\\b${kwLower.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}\\b`, 'i');
+    return regex.test(titleLower);
+  }
+
+  // 长关键词或含特殊字符 → includes
+  return titleLower.includes(kwLower);
+}
+
 export function applyKeywordRules(title: string, rules: KeywordRule[]): FilterResult {
   const titleLower = title.toLowerCase();
   const matchedKeywords: string[] = [];
@@ -523,7 +543,7 @@ export function applyKeywordRules(title: string, rules: KeywordRule[]): FilterRe
   for (const rule of whitelistRules) {
     const keywords = rule.keywords as string[];
     for (const kw of keywords) {
-      if (titleLower.includes(kw.toLowerCase())) {
+      if (keywordMatchesTitle(kw, titleLower)) {
         matchedKeywords.push(kw);
         return { passed: true, matchedKeywords };
       }
@@ -535,7 +555,7 @@ export function applyKeywordRules(title: string, rules: KeywordRule[]): FilterRe
     if (rule.excludeStrength !== "hard") continue;
     const keywords = rule.keywords as string[];
     for (const kw of keywords) {
-      if (titleLower.includes(kw.toLowerCase())) {
+      if (keywordMatchesTitle(kw, titleLower)) {
         return { passed: false, matchedKeywords: [], excludeReason: `硬排除: "${kw}"` };
       }
     }
@@ -547,7 +567,7 @@ export function applyKeywordRules(title: string, rules: KeywordRule[]): FilterRe
     if (rule.excludeStrength !== "soft") continue;
     const keywords = rule.keywords as string[];
     for (const kw of keywords) {
-      if (titleLower.includes(kw.toLowerCase())) {
+      if (keywordMatchesTitle(kw, titleLower)) {
         softExcludeReason = `软排除: "${kw}"`;
         break;
       }
@@ -565,7 +585,7 @@ export function applyKeywordRules(title: string, rules: KeywordRule[]): FilterRe
       const keywords = rule.keywords as string[];
       if (rule.logic === "and") {
         // AND逻辑：所有关键词都要匹配
-        const allMatch = keywords.every(kw => titleLower.includes(kw.toLowerCase()));
+        const allMatch = keywords.every(kw => keywordMatchesTitle(kw, titleLower));
         if (allMatch) {
           includeMatched = true;
           matchedKeywords.push(...keywords);
@@ -573,7 +593,7 @@ export function applyKeywordRules(title: string, rules: KeywordRule[]): FilterRe
       } else {
         // OR逻辑：任一关键词匹配
         for (const kw of keywords) {
-          if (titleLower.includes(kw.toLowerCase())) {
+          if (keywordMatchesTitle(kw, titleLower)) {
             includeMatched = true;
             matchedKeywords.push(kw);
           }

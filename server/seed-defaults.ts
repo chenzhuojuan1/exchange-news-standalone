@@ -230,49 +230,35 @@ export const SOURCE_TEMPLATES = [
 ];
 
 // ========== 默认关键词规则 ==========
+// 注意：短缩写（<=5字符纯字母）会自动使用 word boundary 匹配，
+// 例如 "SEC" 不会匹配 "section"、"sector"、"second" 等
 export const DEFAULT_KEYWORD_RULES = [
   // ===== 包含规则 =====
   {
-    name: "交易所关键词",
+    name: "交易所名称",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
-      "NYSE", "Nasdaq", "LSE", "LSEG", "CME", "ICE", "Cboe", "HKEX",
-      "SGX", "ASX", "TMX", "JSE", "B3", "Euronext", "Deutsche Börse",
-      "Deutsche Borse", "SIX", "Borsa Italiana", "JPX", "KRX",
-      "LME", "Eurex", "EEX", "ATHEX", "Bursa Malaysia",
-      "Warsaw Stock Exchange", "Taiwan Futures Exchange",
-      "London Metal Exchange", "WFE", "World Federation of Exchanges"
+      "NYSE", "Nasdaq", "LSEG", "CME Group", "ICE", "Cboe", "HKEX",
+      "SGX", "ASX", "TMX", "Euronext", "Deutsche B\u00f6rse",
+      "Deutsche Borse", "Borsa Italiana", "JPX", "KRX",
+      "Eurex", "Bursa Malaysia",
+      "London Stock Exchange", "London Metal Exchange",
+      "New York Stock Exchange", "Hong Kong Exchanges",
+      "Japan Exchange Group", "Korea Exchange",
+      "Chicago Mercantile Exchange", "Intercontinental Exchange",
+      "Singapore Exchange", "World Federation of Exchanges"
     ]),
-    description: "主要全球交易所名称，匹配任一即保留",
+    description: "主要全球交易所名称（短缩写自动 word boundary 匹配）",
     enabled: true,
   },
   {
-    name: "监管机构关键词",
+    name: "监管机构名称",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
       "SEC", "FCA", "ESMA", "CFTC", "IOSCO", "MAS", "SFC", "ASIC",
-      "JFSA", "FSC", "FSA"
-    ]),
-    description: "主要金融监管机构缩写",
-    enabled: true,
-  },
-  {
-    name: "国际组织关键词",
-    ruleType: "include",
-    logic: "or",
-    keywords: JSON.stringify([
-      "BIS", "FSB", "IMF", "World Bank", "WFE"
-    ]),
-    description: "国际金融组织",
-    enabled: true,
-  },
-  {
-    name: "机构全称短语",
-    ruleType: "include",
-    logic: "or",
-    keywords: JSON.stringify([
+      "JFSA", "BIS", "FSB",
       "Securities and Exchange Commission",
       "Financial Conduct Authority",
       "Commodity Futures Trading Commission",
@@ -283,166 +269,92 @@ export const DEFAULT_KEYWORD_RULES = [
       "Monetary Authority of Singapore",
       "Securities and Futures Commission",
       "Australian Securities and Investments Commission",
-      "New York Stock Exchange",
-      "London Stock Exchange",
-      "Hong Kong Exchanges",
-      "Japan Exchange Group",
-      "Korea Exchange",
-      "Chicago Mercantile Exchange",
-      "Intercontinental Exchange",
-      "Singapore Exchange",
-      "Financial Services Agency",
-      "Financial Services Commission",
-      "World Federation of Exchanges"
+      "Financial Services Agency"
     ]),
-    description: "机构全称，避免缩写误匹配",
+    description: "监管机构缩写+全称（短缩写自动 word boundary 匹配）",
     enabled: true,
   },
 
-  // --- 制度改革 ---
+  // --- 制度改革（精简） ---
   {
     name: "制度改革关键词",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
       "regulatory reform", "rule change", "rule amendment",
-      "rule proposal", "rule filing", "regulation change",
-      "regulatory framework", "new regulation", "deregulation",
-      "regulatory sandbox", "pilot program", "consultation paper",
-      "policy reform", "legislative reform", "capital framework",
-      "liquidity regulation", "market reform", "governance reform"
+      "rule proposal", "rule filing",
+      "regulatory framework", "new regulation",
+      "regulatory sandbox", "consultation paper",
+      "market reform", "capital framework"
     ]),
     description: "制度改革、规则修订、监管框架变更",
     enabled: true,
   },
 
-  // --- 重要产品 ---
+  // --- 重要产品（精简，去掉泛词） ---
   {
     name: "重要产品关键词",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
-      "DR listing", "depositary receipt", "ETF",
-      "ESG", "green bond", "sustainability bond",
-      "derivatives", "futures", "options",
-      "structured product", "new index", "new contract",
-      "carbon credit", "SPAC", "REIT",
-      "tokenized", "digital asset", "stablecoin"
+      "depositary receipt", "ETF listing", "ETF launch",
+      "green bond", "sustainability bond",
+      "new index launch", "new contract launch",
+      "carbon credit", "digital asset", "stablecoin", "tokenized"
     ]),
-    description: "DR、ETF、ESG、衍生品等重要产品类型",
+    description: "DR、ETF上市、绿色债券、数字资产等重要产品",
     enabled: true,
   },
 
-  // --- 市场结构 ---
+  // --- 市场结构（精简） ---
   {
     name: "市场结构关键词",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
       "market structure", "trading system", "matching engine",
-      "order type", "tick size", "circuit breaker",
-      "market maker", "liquidity provider", "dark pool",
-      "best execution", "price discovery", "auction",
-      "closing auction", "opening auction", "continuous trading",
-      "market microstructure", "trading venue", "lit market",
-      "clearing", "settlement", "CCP", "central counterparty",
-      "T+1 settlement", "T+0 settlement", "netting"
+      "tick size", "circuit breaker",
+      "market microstructure", "high frequency trading",
+      "central counterparty", "T+1 settlement", "T+0 settlement",
+      "consolidated tape"
     ]),
     description: "市场结构、交易系统、清算结算相关",
     enabled: true,
   },
 
-  // --- 数据 ---
-  {
-    name: "数据相关关键词",
-    ruleType: "include",
-    logic: "or",
-    keywords: JSON.stringify([
-      "market data", "data standard",
-      "data sharing", "data transparency", "consolidated tape",
-      "reporting requirement", "trade reporting",
-      "transaction reporting", "data analytics",
-      "reference data", "LEI", "ISIN",
-      "data regulation", "data access"
-    ]),
-    description: "市场数据、数据标准、报告要求相关",
-    enabled: true,
-  },
-
-  // --- 技术改革 ---
+  // --- 技术改革（精简，去掉 API/real-time/low latency 等泛词） ---
   {
     name: "技术改革关键词",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
-      "technology upgrade", "cloud migration", "cloud computing",
-      "artificial intelligence", "machine learning", "AI trading",
-      "blockchain", "distributed ledger", "DLT",
-      "tokenization", "smart contract", "API",
-      "cyber security", "cybersecurity", "resilience",
-      "system upgrade", "platform migration",
-      "RegTech", "SupTech", "FinTech",
-      "quantum computing", "real-time", "low latency"
+      "cloud migration", "blockchain", "distributed ledger",
+      "tokenization", "smart contract",
+      "cybersecurity", "cyber security",
+      "RegTech", "SupTech"
     ]),
-    description: "技术升级、云计算、AI、区块链、网络安全等技术改革",
+    description: "技术升级、区块链、网络安全等金融科技",
     enabled: true,
   },
 
-  // --- 交易所合作 ---
+  // --- 跨境合作（精简，去掉 partnership/collaboration/working group 等泛词） ---
   {
-    name: "交易所合作关键词",
+    name: "跨境合作关键词",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
-      "partnership", "strategic alliance", "collaboration",
-      "joint venture", "cooperation agreement",
-      "exchange cooperation", "exchange partnership",
-      "technology partnership", "licensing agreement",
-      "merger", "acquisition", "stake",
-      "consortium", "working group"
+      "cross-border", "Stock Connect", "Bond Connect",
+      "mutual recognition", "interoperability",
+      "cross-listing", "dual listing",
+      "memorandum of understanding",
+      "regulatory cooperation", "supervisory cooperation",
+      "exchange cooperation"
     ]),
-    description: "交易所间合作、联盟、并购、技术合作",
+    description: "跨境互联互通、监管合作",
     enabled: true,
   },
 
-  // --- 对外开放 ---
-  {
-    name: "对外开放关键词",
-    ruleType: "include",
-    logic: "or",
-    keywords: JSON.stringify([
-      "cross-border", "international access", "foreign investor",
-      "QFII", "RQFII", "Stock Connect", "Bond Connect",
-      "mutual recognition", "passport", "equivalence",
-      "market access", "liberalization", "opening up",
-      "interoperability", "cross-listing", "dual listing",
-      "global offering", "international listing",
-      "MOU", "memorandum of understanding",
-      "regulatory cooperation", "supervisory cooperation"
-    ]),
-    description: "跨境互联互通、对外开放、互认机制、监管合作",
-    enabled: true,
-  },
-
-  // --- SEC专题 ---
-  {
-    name: "SEC专题关键词",
-    ruleType: "include",
-    logic: "or",
-    keywords: JSON.stringify([
-      "SEC Chairman", "SEC Chair", "SEC Speaks",
-      "SEC enforcement", "SEC rulemaking",
-      "SEC no-action", "SEC guidance",
-      "SEC exemptive", "SEC concept release",
-      "Regulation NMS", "Regulation SHO",
-      "Regulation ATS", "Regulation Best Interest",
-      "Form 10-K", "proxy", "disclosure requirement"
-    ]),
-    description: "SEC相关专题：主席讲话、执法、规则制定、关键法规",
-    enabled: true,
-  },
-
-  // ===== 排除规则 =====
+  // ===== 排除规则（增强） =====
   {
     name: "人事变动排除",
     ruleType: "exclude",
@@ -451,7 +363,7 @@ export const DEFAULT_KEYWORD_RULES = [
     keywords: JSON.stringify([
       "appoints", "appointed", "appointment", "resigns", "resignation",
       "retires", "retirement", "steps down", "new CEO", "new chairman",
-      "commissioner"
+      "commissioner", "board member", "board of directors"
     ]),
     description: "排除人事任命、辞职、退休等新闻",
     enabled: true,
@@ -463,13 +375,14 @@ export const DEFAULT_KEYWORD_RULES = [
     excludeStrength: "hard",
     keywords: JSON.stringify([
       "quarterly results", "annual results", "financial results",
-      "revenue growth", "profit", "earnings", "dividend"
+      "revenue growth", "profit", "earnings", "dividend",
+      "quarterly report", "annual report", "fiscal year"
     ]),
     description: "排除企业财务报告类新闻",
     enabled: true,
   },
   {
-    name: "低价值内容排除",
+    name: "统计报告排除",
     ruleType: "exclude",
     logic: "or",
     excludeStrength: "hard",
@@ -477,9 +390,12 @@ export const DEFAULT_KEYWORD_RULES = [
       "monthly report", "monthly summary", "monthly review",
       "monthly bulletin", "monthly volumes", "monthly headlines",
       "trading statistics", "market statistics", "daily statistics",
-      "weekly report", "weekly summary", "weekly bulletin"
+      "weekly report", "weekly summary", "weekly bulletin",
+      "trading volumes", "market turnover", "daily turnover",
+      "market recap", "market wrap", "market update",
+      "index rebalancing", "rebalance"
     ]),
-    description: "排除月度/周度统计报告、交易量统计等低价值内容",
+    description: "排除统计报告、交易量、市场回顾等低价值内容",
     enabled: true,
   },
   {
@@ -491,23 +407,10 @@ export const DEFAULT_KEYWORD_RULES = [
       "new listing", "lists on", "listed on", "begins trading",
       "starts trading", "IPO", "initial public offering",
       "prime standard", "general standard",
-      "new in the", "welcomes.*to trading",
-      "joins.*exchange", "moves to.*main",
-      "transfers to"
+      "welcomes", "admits to trading",
+      "transfers to", "delisting", "delisted"
     ]),
-    description: "排除个股上市、转板等新闻",
-    enabled: true,
-  },
-  {
-    name: "中国交易所排除",
-    ruleType: "exclude",
-    logic: "or",
-    excludeStrength: "soft",
-    keywords: JSON.stringify([
-      "Shanghai Stock Exchange", "Shenzhen Stock Exchange",
-      "Beijing Stock Exchange", "SSE", "SZSE"
-    ]),
-    description: "软排除以中国交易所为主体的新闻（标记但保留）",
+    description: "排除个股上市、转板、退市等新闻",
     enabled: true,
   },
   {
@@ -517,13 +420,52 @@ export const DEFAULT_KEYWORD_RULES = [
     excludeStrength: "hard",
     keywords: JSON.stringify([
       "disciplinary action", "reprimands", "bans",
-      "fines.*individual", "suspends licence",
-      "warns against", "investor alert",
-      "circular to intermediaries", "compliance deadline",
-      "licence revoked", "licence suspended",
-      "restriction notice", "winding up petition"
+      "suspends licence", "warns against", "investor alert",
+      "compliance deadline", "licence revoked", "licence suspended",
+      "restriction notice", "winding up petition",
+      "enforcement action against"
     ]),
-    description: "排除监管机构日常执法、处罚个人/小机构、投资者警示等事务性新闻",
+    description: "排除监管机构日常执法、处罚个人/小机构、投资者警示",
+    enabled: true,
+  },
+  {
+    name: "运营日常排除",
+    ruleType: "exclude",
+    logic: "or",
+    excludeStrength: "hard",
+    keywords: JSON.stringify([
+      "market holiday", "trading hours", "system maintenance",
+      "trading halt", "trading suspension",
+      "office closure", "public holiday",
+      "scheduled maintenance", "service disruption",
+      "connectivity", "test environment"
+    ]),
+    description: "排除交易所日常运营通知（假期、维护、停牌等）",
+    enabled: true,
+  },
+  {
+    name: "活动与奖项排除",
+    ruleType: "exclude",
+    logic: "or",
+    excludeStrength: "hard",
+    keywords: JSON.stringify([
+      "conference", "summit", "webinar", "seminar", "workshop",
+      "award", "awards", "ceremony", "celebrates",
+      "anniversary", "sponsorship", "sponsor"
+    ]),
+    description: "排除会议、奖项、庆典、赞助等非实质性新闻",
+    enabled: true,
+  },
+  {
+    name: "中国交易所排除",
+    ruleType: "exclude",
+    logic: "or",
+    excludeStrength: "soft",
+    keywords: JSON.stringify([
+      "Shanghai Stock Exchange", "Shenzhen Stock Exchange",
+      "Beijing Stock Exchange"
+    ]),
+    description: "软排除以中国交易所为主体的新闻（标记但保留）",
     enabled: true,
   },
 
@@ -536,7 +478,7 @@ export const DEFAULT_KEYWORD_RULES = [
       "SEC Chairman", "SEC Chair", "SEC Speaks",
       "Chairman Gensler", "Chairman Atkins"
     ]),
-    description: "SEC主席讲话优先保留，不受排除规则影响",
+    description: "SEC主席讲话优先保留",
     enabled: true,
   },
   {
@@ -545,8 +487,7 @@ export const DEFAULT_KEYWORD_RULES = [
     logic: "or",
     keywords: JSON.stringify([
       "regulatory reform", "regulatory framework",
-      "market reform", "new regulation",
-      "market structure reform", "capital framework reform"
+      "market reform", "market structure reform"
     ]),
     description: "重大监管改革新闻优先保留",
     enabled: true,

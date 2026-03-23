@@ -516,6 +516,32 @@ export const appRouter = router({
       return { rulesAdded, message: `已初始化 ${rulesAdded} 条关键词规则` };
     }),
 
+    // 重置关键词规则：删除所有旧规则，重新导入最新默认规则
+    resetKeywordRules: protectedProcedure.mutation(async () => {
+      // 删除所有现有规则
+      const existingRules = await db.listKeywordRules();
+      for (const rule of existingRules) {
+        await db.deleteKeywordRule(rule.id);
+      }
+
+      // 重新导入默认规则
+      let rulesAdded = 0;
+      for (const rule of DEFAULT_KEYWORD_RULES) {
+        const ruleData = {
+          ...rule,
+          keywords: typeof rule.keywords === 'string' ? rule.keywords : JSON.stringify(rule.keywords),
+        };
+        await db.createKeywordRule(ruleData as any);
+        rulesAdded++;
+      }
+
+      return {
+        deleted: existingRules.length,
+        added: rulesAdded,
+        message: `已删除 ${existingRules.length} 条旧规则，重新导入 ${rulesAdded} 条优化后的规则`,
+      };
+    }),
+
     checkStatus: protectedProcedure.query(async () => {
       const sources = await db.listSources();
       const rules = await db.listKeywordRules();
