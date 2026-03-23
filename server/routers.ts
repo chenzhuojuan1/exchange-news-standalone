@@ -317,6 +317,49 @@ export const appRouter = router({
         };
       }),
 
+    // 清除所有文章（重新开始）
+    clearAll: protectedProcedure.mutation(async () => {
+      const deleted = await db.deleteAllArticles();
+      return { deleted, message: `已清除 ${deleted} 条文章` };
+    }),
+
+    // 清除旧文章（保留最近N天）
+    clearOld: protectedProcedure
+      .input(z.object({ keepDays: z.number().default(7) }))
+      .mutation(async ({ input }) => {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - input.keepDays);
+        cutoff.setHours(0, 0, 0, 0);
+        const deleted = await db.deleteOldArticles(cutoff);
+        return { deleted, message: `已清除 ${deleted} 条 ${input.keepDays} 天前的文章` };
+      }),
+
+    // 用当前关键词规则重新筛选所有文章
+    refilter: protectedProcedure.mutation(async () => {
+      const rules = await db.getEnabledKeywordRules();
+      const allArticles = await db.getAllArticles();
+      let changed = 0;
+      for (const article of allArticles) {
+        const filterResult = applyKeywordRules(article.title, rules);
+        const newExcluded = !filterResult.passed;
+        if (newExcluded !== article.isExcluded) {
+          await db.updateArticleExcluded(article.id, newExcluded, filterResult.matchedKeywords);
+          changed++;
+        }
+      }
+      const totalIncluded = allArticles.filter(a => {
+        const fr = applyKeywordRules(a.title, rules);
+        return fr.passed;
+      }).length;
+      return {
+        total: allArticles.length,
+        changed,
+        included: totalIncluded,
+        excluded: allArticles.length - totalIncluded,
+        message: `已重新筛选 ${allArticles.length} 条文章，${changed} 条状态发生变化，当前 ${totalIncluded} 条通过筛选`,
+      };
+    }),
+
     // LLM总结当日新闻
     summarize: protectedProcedure
       .input(z.object({

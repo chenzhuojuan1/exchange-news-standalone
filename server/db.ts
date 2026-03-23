@@ -176,6 +176,32 @@ export async function getArticlesByDateRange(dateFrom: Date, dateTo: Date, exclu
   return db.select().from(articles).where(and(...conditions)).orderBy(desc(articles.publishDate));
 }
 
+export async function deleteAllArticles() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.delete(articles).returning({ id: articles.id });
+  return result.length;
+}
+
+export async function deleteOldArticles(beforeDate: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.delete(articles).where(lte(articles.publishDate, beforeDate)).returning({ id: articles.id });
+  return result.length;
+}
+
+export async function getAllArticles() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(articles);
+}
+
+export async function updateArticleExcluded(id: number, isExcluded: boolean, matchedKeywords: string[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(articles).set({ isExcluded, matchedKeywords }).where(eq(articles.id, id));
+}
+
 // ========== Reports ==========
 export async function listReports() {
   const db = await getDb();

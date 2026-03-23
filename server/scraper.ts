@@ -681,12 +681,28 @@ export function convertToArticles(
   rules: KeywordRule[],
 ): InsertArticle[] {
   const articleList: InsertArticle[] = [];
+  const seen = new Set<string>();
 
   for (const item of result.items) {
+    // 去重：同一次抓取中相同标题只保留一条
+    const titleKey = item.title.toLowerCase().trim();
+    if (seen.has(titleKey)) continue;
+    seen.add(titleKey);
+
+    // 过滤太短的标题（通常是导航链接）
+    if (item.title.trim().length < 10) continue;
+
+    // 过滤明显的导航/功能性链接
+    const navPatterns = /^(Visit|View|See|Read|Browse|Search|Filter|Sort|Home|About|Contact|Login|Sign|Menu|More|Back|Next|Previous|Subscribe|Download|Share|Print|RSS|Sitemap|Privacy|Terms|Disclaimer|Copyright|FAQ|Help)\b/i;
+    if (navPatterns.test(item.title.trim())) continue;
+
     const filterResult = applyKeywordRules(item.title, rules);
 
     // 解析日期（支持多种格式）
     const parsedDate = parseFlexibleDate(item.date);
+
+    // 日期过滤：超过90天的旧新闻直接丢弃（不入库）
+    if (parsedDate && !isRecentDate(parsedDate, 90)) continue;
 
     articleList.push({
       sourceId: result.source.id,

@@ -109,8 +109,13 @@ export const SOURCE_TEMPLATES = [
     category: "交易所",
     url: "https://www.hkex.com.hk/News/News-Release?sc_lang=en",
     sourceType: "html" as const,
-    selectors: {},
-    description: "香港交易所新闻发布（智能抓取模式）",
+    selectors: {
+      container: "div.whats_on_tdy_text_2",
+      title: "a",
+      link: "a",
+      date: "",  // HKEX 新闻列表页无日期，由文章页面获取
+    },
+    description: "香港交易所新闻发布（精确选择器模式，仅抓取实际新闻条目）",
   },
   {
     name: "Deutsche Börse - 新闻发布",

@@ -49,6 +49,22 @@ export default function Home() {
     onError: (err) => toast.error(`抓取失败: ${err.message}`),
   });
 
+  const clearAll = trpc.article.clearAll.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      refetch();
+    },
+    onError: (err) => toast.error(`清除失败: ${err.message}`),
+  });
+
+  const refilter = trpc.article.refilter.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      refetch();
+    },
+    onError: (err) => toast.error(`重新筛选失败: ${err.message}`),
+  });
+
   const summarize = trpc.article.summarize.useMutation({
     onSuccess: (result) => {
       setSummaryText(result.summary);
@@ -149,6 +165,36 @@ export default function Home() {
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
             )}
             AI总结
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (confirm('确定用当前关键词规则重新筛选所有文章？')) refilter.mutate();
+            }}
+            disabled={refilter.isPending}
+          >
+            {refilter.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            重新筛选
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (confirm('确定清除所有文章？此操作不可撤销！')) clearAll.mutate();
+            }}
+            disabled={clearAll.isPending}
+          >
+            {clearAll.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            清除文章
           </Button>
           <Button
             size="sm"
