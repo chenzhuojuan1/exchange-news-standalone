@@ -1,0 +1,30 @@
+databases:
+  - name: exchange-news-standalone-db
+    plan: free
+    databaseName: exchange_news_standalone
+    user: exchange_news_user
+
+services:
+  - type: web
+    name: exchange-news-standalone
+    runtime: node
+    plan: free
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: exchange-news-standalone-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
