@@ -232,6 +232,64 @@ export const SOURCE_TEMPLATES = [
     },
     description: "欧洲证券和市场管理局新闻（精确选择器，日期格式 DD/MM/YYYY）",
   },
+
+  // --- 财经媒体 ---
+  {
+    name: "Financial Times - 市场新闻",
+    category: "财经媒体",
+    url: "https://www.ft.com/markets?format=rss",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "英国金融时报市场版块 RSS（免费，实时更新，约25条/次）",
+  },
+  {
+    name: "Financial Times - 金融服务",
+    category: "财经媒体",
+    url: "https://www.ft.com/financial-services?format=rss",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "英国金融时报金融服务版块 RSS（免费，实时更新，涵盖银行、资管、监管等）",
+  },
+  {
+    name: "Financial Times - 金融科技",
+    category: "财经媒体",
+    url: "https://www.ft.com/fintech?format=rss",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "英国金融时报金融科技版块 RSS（免费，实时更新，涵盖数字资产、监管科技等）",
+  },
+  {
+    name: "Financial Times - 全球经济",
+    category: "财经媒体",
+    url: "https://www.ft.com/global-economy?format=rss",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "英国金融时报全球经济版块 RSS（免费，实时更新）",
+  },
+  {
+    name: "The Economist - 金融与经济",
+    category: "财经媒体",
+    url: "https://www.economist.com/finance-and-economics/rss.xml",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "经济学人金融与经济版块 RSS（免费，每周更新，深度分析）",
+  },
+  {
+    name: "The Economist - 商业",
+    category: "财经媒体",
+    url: "https://www.economist.com/business/rss.xml",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "经济学人商业版块 RSS（免费，每周更新）",
+  },
+  {
+    name: "The Economist - 社论",
+    category: "财经媒体",
+    url: "https://www.economist.com/leaders/rss.xml",
+    sourceType: "rss" as const,
+    selectors: {},
+    description: "经济学人社论版块 RSS（免费，每周更新，重要政策立场）",
+  },
 ];
 
 // ========== 默认关键词规则 ==========
@@ -507,6 +565,60 @@ export const DEFAULT_KEYWORD_RULES = [
       "cross-border cooperation", "interoperability"
     ]),
     description: "交易所合作与互联互通新闻优先保留",
+    enabled: true,
+  },
+
+  // ===== 财经媒体专用包含规则 =====
+  // 针对 FT、Economist 叙述性标题设计，覆盖四个方向：交易所风险、证券监管、证券创新、AI
+  {
+    name: "财经媒体 - 交易所风险",
+    ruleType: "include",
+    logic: "or",
+    keywords: JSON.stringify([
+      "stock exchange",
+      "market infrastructure",
+      "clearing house",
+      "credit market"
+    ]),
+    description: "财经媒体专用：交易所风险相关（清算风险、信贷市场、市场基础设施）",
+    enabled: true,
+  },
+  {
+    name: "财经媒体 - 证券监管",
+    ruleType: "include",
+    logic: "or",
+    keywords: JSON.stringify([
+      "financial regulator",
+      "financial watchdog",
+      "regulatory overhaul",
+      "investor protection"
+    ]),
+    description: "财经媒体专用：证券监管相关（监管机构、监管改革、投资者保护）",
+    enabled: true,
+  },
+  {
+    name: "财经媒体 - 证券创新",
+    ruleType: "include",
+    logic: "or",
+    keywords: JSON.stringify([
+      "tokenis",
+      "stablecoin",
+      "crypto exchange",
+      "fintech"
+    ]),
+    description: "财经媒体专用：证券创新相关（代币化、稳定币、加密货币交易所、金融科技）",
+    enabled: true,
+  },
+  {
+    name: "财经媒体 - AI",
+    ruleType: "include",
+    logic: "or",
+    keywords: JSON.stringify([
+      "AI",
+      "artificial intelligence",
+      "generative AI"
+    ]),
+    description: "财经媒体专用：人工智能相关（AI自动加词边界）",
     enabled: true,
   },
 ];

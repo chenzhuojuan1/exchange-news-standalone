@@ -81,6 +81,10 @@ interface SourceForm {
     summaryField: string;
     dataPath: string;
   };
+  rssAuth: {
+    username: string;
+    password: string;
+  };
   description: string;
   enabled: boolean;
 }
@@ -103,6 +107,7 @@ const defaultForm: SourceForm = {
     summaryField: "summary",
     dataPath: "data",
   },
+  rssAuth: { username: "", password: "" },
   description: "",
   enabled: true,
 };
@@ -244,6 +249,10 @@ export default function SourcesPage() {
         summaryField: apiConfig.summaryField || "summary",
         dataPath: apiConfig.dataPath || "data",
       },
+      rssAuth: {
+        username: apiConfig.auth?.username || "",
+        password: apiConfig.auth?.password || "",
+      },
       description: source.description || "",
       enabled: source.enabled,
     });
@@ -278,6 +287,16 @@ export default function SourcesPage() {
         payload.selectors = form.selectors;
       }
       payload.dateFormat = form.dateFormat || undefined;
+    } else if (form.sourceType === "rss") {
+      // RSS 类型：如果配置了认证信息，保存到 apiConfig.auth
+      if (form.rssAuth.username && form.rssAuth.password) {
+        payload.apiConfig = {
+          auth: {
+            username: form.rssAuth.username,
+            password: form.rssAuth.password,
+          },
+        };
+      }
     } else if (form.sourceType === "api") {
       let parsedHeaders: any = undefined;
       if (form.apiConfig.headers) {
@@ -714,6 +733,44 @@ export default function SourcesPage() {
                       </Select>
                     </div>
                   </div>
+
+                  {/* RSS 认证配置 - 仅RSS类型 */}
+                  {form.sourceType === "rss" && (
+                    <Card className="border-dashed">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">RSS 认证配置（可选）</CardTitle>
+                        <CardDescription className="text-xs">
+                          如果 RSS 需要登录才能访问（如 WSJ 订阅者 RSS），请在此处填写账号和密码。免费 RSS 无需填写。
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-xs">账号（邮箱）</Label>
+                            <Input
+                              placeholder="your@email.com"
+                              value={form.rssAuth.username}
+                              onChange={(e) => setForm({ ...form, rssAuth: { ...form.rssAuth, username: e.target.value } })}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">密码</Label>
+                            <Input
+                              type="password"
+                              placeholder="订阅账号密码"
+                              value={form.rssAuth.password}
+                              onChange={(e) => setForm({ ...form, rssAuth: { ...form.rssAuth, password: e.target.value } })}
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                        {form.rssAuth.username && form.rssAuth.password && (
+                          <p className="text-xs text-green-600">✓ 已配置认证信息，将使用 HTTP Basic Auth 访问 RSS</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* CSS选择器 - 仅HTML类型 */}
                   {form.sourceType === "html" && (

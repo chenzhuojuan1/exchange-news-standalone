@@ -285,27 +285,49 @@ export async function scrapeRssSource(source: Source): Promise<ScrapeResult> {
     return { source, items, errors: ["RSS订阅地址为空"] };
   }
 
+  // 支持 HTTP Basic Auth（用于 WSJ 等需要订阅认证的 RSS）
+  // apiConfig 中可配置 { auth: { username: "...", password: "..." } }
+  const apiConfig = source.apiConfig as { auth?: { username?: string; password?: string } } | null;
+  const authHeaders: Record<string, string> = {};
+  if (apiConfig?.auth?.username && apiConfig?.auth?.password) {
+    const credentials = Buffer.from(`${apiConfig.auth.username}:${apiConfig.auth.password}`).toString("base64");
+    authHeaders["Authorization"] = `Basic ${credentials}`;
+  }
+
   try {
     const response = await fetch(source.url, {
-      headers: { "User-Agent": "NewsAggregator/1.0", "Accept": "application/rss+xml,application/xml,text/xml,*/*" },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/rss+xml,application/xml,text/xml,*/*",
+        ...authHeaders,
+      },
       signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        return { source, items, errors: [`RSS认证失败 (401): 请检查账号密码配置`] };
+      }
       return { source, items, errors: [`HTTP请求失败: ${response.status}`] };
     }
 
     const xml = await response.text();
     const $ = cheerio.load(xml, { xmlMode: true });
 
+    // 清理 CDATA 残留的辅助函数（处理 Economist 等 RSS 标题中的 CDATA 包裹）
+    const cleanCdata = (text: string) =>
+      text.replace(/<!\[CDATA\[|\]\]>/g, "").trim();
+
     // RSS 2.0
     $("item").each((_, el) => {
       const $el = $(el);
+      const rawTitle = $el.find("title").text().trim();
+      const rawUrl = $el.find("link").text().trim() || $el.find("guid").text().trim();
       items.push({
-        title: $el.find("title").text().trim(),
-        url: $el.find("link").text().trim() || $el.find("guid").text().trim(),
+        title: cleanCdata(rawTitle),
+        url: cleanCdata(rawUrl),
         date: $el.find("pubDate").text().trim(),
-        summary: $el.find("description").text().trim().substring(0, 500),
+        summary: cleanCdata($el.find("description").text().trim()).substring(0, 500),
       });
     });
 
@@ -314,10 +336,10 @@ export async function scrapeRssSource(source: Source): Promise<ScrapeResult> {
       $("entry").each((_, el) => {
         const $el = $(el);
         items.push({
-          title: $el.find("title").text().trim(),
+          title: cleanCdata($el.find("title").text().trim()),
           url: $el.find("link").attr("href") || "",
           date: $el.find("published").text().trim() || $el.find("updated").text().trim(),
-          summary: $el.find("summary").text().trim().substring(0, 500),
+          summary: cleanCdata($el.find("summary").text().trim()).substring(0, 500),
         });
       });
     }
