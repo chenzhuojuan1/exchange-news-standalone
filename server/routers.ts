@@ -454,6 +454,31 @@ export const appRouter = router({
       }),
   }),
 
+  // ========== 收藏管理 ==========
+  favorite: router({
+    list: protectedProcedure.query(async () => {
+      return db.getFavorites();
+    }),
+
+    ids: protectedProcedure.query(async () => {
+      return db.getFavoriteArticleIds();
+    }),
+
+    add: protectedProcedure
+      .input(z.object({ articleId: z.number().int().positive(), note: z.string().optional() }))
+      .mutation(async ({ input }) => {
+        const success = await db.addFavorite(input.articleId, input.note);
+        return { success, message: success ? "已收藏" : "收藏失败" };
+      }),
+
+    remove: protectedProcedure
+      .input(z.object({ articleId: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const success = await db.removeFavorite(input.articleId);
+        return { success, message: success ? "已取消收藏" : "取消失败" };
+      }),
+  }),
+
   // ========== 邮件配置 ==========
   emailConfig: router({
     get: protectedProcedure.query(async () => {

@@ -7,6 +7,7 @@ import {
   articles, InsertArticle, Article,
   reports, InsertReport, Report,
   emailConfig, InsertEmailConfig, EmailConfig,
+  favorites, InsertFavorite, Favorite,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -251,5 +252,68 @@ export async function upsertEmailConfig(data: Partial<InsertEmailConfig>) {
     await db.update(emailConfig).set({ ...data, updatedAt: new Date() }).where(eq(emailConfig.id, existing.id));
   } else {
     await db.insert(emailConfig).values(data as InsertEmailConfig);
+  }
+}
+
+// ========== Favorites ==========
+export async function addFavorite(articleId: number, note?: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  try {
+    const existing = await db.select().from(favorites).where(eq(favorites.articleId, articleId)).limit(1);
+    if (existing.length > 0) return true;
+    await db.insert(favorites).values({ articleId, note: note || null });
+    return true;
+  } catch (error) {
+    console.error("[DB] Failed to add favorite:", (error as Error).message);
+    return false;
+  }
+}
+
+export async function removeFavorite(articleId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  await db.delete(favorites).where(eq(favorites.articleId, articleId));
+  return true;
+}
+
+export async function getFavorites() {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const rows = await db
+      .select({
+        id: articles.id,
+        title: articles.title,
+        titleCn: articles.titleCn,
+        url: articles.url,
+        publishDate: articles.publishDate,
+        matchedKeywords: articles.matchedKeywords,
+        summary: articles.summary,
+        sourceName: articles.sourceName,
+        isExcluded: articles.isExcluded,
+        favoriteId: favorites.id,
+        note: favorites.note,
+        favoritedAt: favorites.createdAt,
+      })
+      .from(favorites)
+      .innerJoin(articles, eq(favorites.articleId, articles.id))
+      .orderBy(desc(favorites.createdAt));
+    return rows;
+  } catch (error) {
+    console.warn("[DB] getFavorites failed:", (error as Error).message);
+    return [];
+  }
+}
+
+export async function getFavoriteArticleIds(): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const rows = await db.select({ articleId: favorites.articleId }).from(favorites);
+    return rows.map(r => r.articleId);
+  } catch (error) {
+    console.warn("[DB] getFavoriteArticleIds failed:", (error as Error).message);
+    return [];
   }
 }

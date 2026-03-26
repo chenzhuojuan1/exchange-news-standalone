@@ -11,12 +11,14 @@ import KeywordsPage from "./pages/KeywordsPage";
 import ManualPage from "./pages/ManualPage";
 import ReportsPage from "./pages/ReportsPage";
 import EmailPage from "./pages/EmailPage";
+import FavoritesPage from "./pages/FavoritesPage";
 
 function Router() {
   return (
     <DashboardLayout>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/favorites" component={FavoritesPage} />
         <Route path="/sources" component={SourcesPage} />
         <Route path="/keywords" component={KeywordsPage} />
         <Route path="/manual" component={ManualPage} />

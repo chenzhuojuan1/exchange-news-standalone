@@ -30,6 +30,7 @@ import {
   LogOut,
   PanelLeft,
   Lock,
+  Star,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -39,6 +40,7 @@ import { Input } from "./ui/input";
 
 const menuItems = [
   { icon: Newspaper, label: "新闻浏览", path: "/" },
+  { icon: Star, label: "我的收藏", path: "/favorites" },
   { icon: Globe, label: "信息源管理", path: "/sources" },
   { icon: Tags, label: "关键词规则", path: "/keywords" },
   { icon: ClipboardPaste, label: "手动添加", path: "/manual" },

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Loader2, RefreshCw, ExternalLink, Search, Newspaper, Sparkles, X, Plus, Minus, Tag, ShieldX, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, ExternalLink, Search, Newspaper, Sparkles, X, Plus, Minus, Tag, ShieldX, Trash2, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
@@ -38,6 +38,34 @@ export default function Home() {
   });
 
   const { data: keywordRules, refetch: refetchRules } = trpc.keywordRule.list.useQuery();
+
+  // 收藏功能
+  const { data: favoriteIds } = trpc.favorite.ids.useQuery();
+  const favoriteSet = new Set(favoriteIds ?? []);
+
+  const addFavorite = trpc.favorite.add.useMutation({
+    onSuccess: () => {
+      utils.favorite.ids.invalidate();
+      toast.success("已收藏");
+    },
+    onError: (err) => toast.error(`收藏失败: ${err.message}`),
+  });
+
+  const removeFavorite = trpc.favorite.remove.useMutation({
+    onSuccess: () => {
+      utils.favorite.ids.invalidate();
+      toast.success("已取消收藏");
+    },
+    onError: (err) => toast.error(`取消收藏失败: ${err.message}`),
+  });
+
+  const toggleFavorite = (articleId: number) => {
+    if (favoriteSet.has(articleId)) {
+      removeFavorite.mutate({ articleId });
+    } else {
+      addFavorite.mutate({ articleId });
+    }
+  };
 
   const scrapeAll = trpc.article.scrapeAll.useMutation({
     onSuccess: (result) => {
@@ -320,16 +348,25 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  {article.url && (
-                    <a
-                      href={article.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 p-2 rounded-lg hover:bg-accent transition-colors"
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => toggleFavorite(article.id)}
+                      className="p-2 rounded-lg hover:bg-accent transition-colors"
+                      title={favoriteSet.has(article.id) ? "取消收藏" : "收藏"}
                     >
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    </a>
-                  )}
+                      <Star className={`h-4 w-4 ${favoriteSet.has(article.id) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+                    </button>
+                    {article.url && (
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg hover:bg-accent transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

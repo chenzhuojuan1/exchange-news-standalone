@@ -129,3 +129,16 @@ export const emailConfig = pgTable("email_config", {
 
 export type EmailConfig = typeof emailConfig.$inferSelect;
 export type InsertEmailConfig = typeof emailConfig.$inferInsert;
+
+/**
+ * 收藏表
+ */
+export const favorites = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  articleId: integer("article_id").notNull(),
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Favorite = typeof favorites.$inferSelect;
+export type InsertFavorite = typeof favorites.$inferInsert;

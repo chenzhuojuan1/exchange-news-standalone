@@ -1,7 +1,8 @@
 /**
  * 预置默认信息源和关键词规则
  * 
- * 包含：交易所/证监会信息源模板 + 关键词规则（包含/排除/白名单）
+ * 信息源：Mondovisione + Financial Times + The Economist
+ * 关键词规则：包含/排除/白名单 + 财经媒体专用
  */
 
 // 默认信息源配置（seedDefaults时自动导入）
@@ -22,14 +23,77 @@ export const DEFAULT_SOURCES = [
     dateFormat: "DD/MM/YYYY",
     description: "全球交易所和金融基础设施新闻聚合网站，覆盖主要交易所公告",
   },
+  {
+    name: "Financial Times - 市场新闻",
+    layer: "website",
+    enabled: true,
+    url: "https://www.ft.com/markets?format=rss",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "英国金融时报市场版块 RSS",
+  },
+  {
+    name: "Financial Times - 金融服务",
+    layer: "website",
+    enabled: true,
+    url: "https://www.ft.com/financial-services?format=rss",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "英国金融时报金融服务版块 RSS",
+  },
+  {
+    name: "Financial Times - 金融科技",
+    layer: "website",
+    enabled: true,
+    url: "https://www.ft.com/fintech?format=rss",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "英国金融时报金融科技版块 RSS",
+  },
+  {
+    name: "Financial Times - 全球经济",
+    layer: "website",
+    enabled: true,
+    url: "https://www.ft.com/global-economy?format=rss",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "英国金融时报全球经济版块 RSS",
+  },
+  {
+    name: "The Economist - 金融与经济",
+    layer: "website",
+    enabled: true,
+    url: "https://www.economist.com/finance-and-economics/rss.xml",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "经济学人金融与经济版块 RSS",
+  },
+  {
+    name: "The Economist - 商业",
+    layer: "website",
+    enabled: true,
+    url: "https://www.economist.com/business/rss.xml",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "经济学人商业版块 RSS",
+  },
+  {
+    name: "The Economist - 社论",
+    layer: "website",
+    enabled: true,
+    url: "https://www.economist.com/leaders/rss.xml",
+    sourceType: "rss",
+    selectors: JSON.stringify({}),
+    description: "经济学人社论版块 RSS",
+  },
 ];
 
 // ========== 可供用户一键添加的网站模板 ==========
 export const SOURCE_TEMPLATES = [
-  // --- 交易所 ---
+  // --- Mondovisione ---
   {
     name: "Mondo Visione - 交易所新闻",
-    category: "交易所",
+    category: "交易所新闻",
     url: "https://mondovisione.com/news/",
     sourceType: "html" as const,
     selectors: {
@@ -41,199 +105,8 @@ export const SOURCE_TEMPLATES = [
     dateFormat: "DD/MM/YYYY",
     description: "全球交易所和金融基础设施新闻聚合网站",
   },
-  {
-    name: "Nasdaq - 新闻发布",
-    category: "交易所",
-    url: "https://www.nasdaq.com/press-release",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "纳斯达克交易所新闻发布（智能抓取模式）",
-  },
-  {
-    name: "NYSE - 新闻",
-    category: "交易所",
-    url: "https://www.nyse.com/news",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "纽约证券交易所新闻（智能抓取模式）",
-  },
-  {
-    name: "LSEG - 新闻发布",
-    category: "交易所",
-    url: "https://www.lseg.com/en/media-centre/press-releases",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "伦敦证券交易所集团新闻发布（智能抓取模式）",
-  },
-  {
-    name: "SGX - 新闻发布",
-    category: "交易所",
-    url: "https://www.sgx.com/media-centre",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "新加坡交易所新闻发布（智能抓取模式）",
-  },
-  {
-    // JPX 通过 JSON API 提供数据，使用 API 模式抓取当月和上月公告
-    name: "JPX - 新闻发布",
-    category: "交易所",
-    url: "https://www.jpx.co.jp/english/corporate/news/news-releases/index.html",
-    sourceType: "api" as const,
-    selectors: {},
-    apiConfig: {
-      // 动态端点：当月 JSON 文件（month_between=0）
-      endpoint: "https://www.jpx.co.jp/english/news/news_ym_00.json",
-      method: "GET",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Referer": "https://www.jpx.co.jp/english/corporate/news/news-releases/index.html",
-      },
-      // 只取 JPX 公告类（排除市场行情类）
-      dataPath: "",
-      titleField: "title",
-      urlField: "url",
-      dateField: "updated_date",
-    },
-    description: "日本交易所集团新闻发布（JSON API 模式，仅抓取 JPX 公告类）",
-  },
-  {
-    name: "KRX - 新闻",
-    category: "交易所",
-    url: "https://global.krx.co.kr/contents/GLB/06/0608/0608010000/GLB0608010000.jsp",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "韩国交易所新闻（智能抓取模式）",
-  },
-  {
-    name: "HKEX - 新闻发布",
-    category: "交易所",
-    url: "https://www.hkex.com.hk/News/News-Release?sc_lang=en",
-    sourceType: "html" as const,
-    selectors: {
-      container: "div.whats_on_tdy_text_2",
-      title: "a",
-      link: "a",
-      date: "",  // HKEX 新闻列表页无日期，由文章页面获取
-    },
-    description: "香港交易所新闻发布（精确选择器模式，仅抓取实际新闻条目）",
-  },
-  {
-    name: "Deutsche Börse - 新闻发布",
-    category: "交易所",
-    url: "https://www.deutsche-boerse.com/dbg-en/media/press-releases",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "德意志交易所集团新闻发布（智能抓取模式）",
-  },
-  {
-    name: "Euronext - 新闻发布",
-    category: "交易所",
-    url: "https://www.euronext.com/en/about/media/press-releases",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "泛欧交易所新闻发布（智能抓取模式）",
-  },
-  {
-    name: "WFE - 世界交易所联合会",
-    category: "交易所",
-    url: "https://www.world-exchanges.org/news",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "世界交易所联合会新闻与研究报告（智能抓取模式）",
-  },
 
-  // --- 监管机构/证监会 ---
-  {
-    name: "SEC - 新闻发布",
-    category: "监管机构",
-    url: "https://www.sec.gov/news/pressreleases",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "美国证券交易委员会新闻发布（智能抓取模式）",
-  },
-  {
-    name: "FCA - 新闻与声明",
-    category: "监管机构",
-    url: "https://www.fca.org.uk/news",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "英国金融行为监管局新闻（智能抓取模式）",
-  },
-  {
-    name: "MAS - 新闻发布",
-    category: "监管机构",
-    url: "https://www.mas.gov.sg/news",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "新加坡金融管理局新闻发布（智能抓取模式）",
-  },
-  {
-    // JFSA 页面有精确的 <ul><li> 结构，链接文本包含日期
-    name: "JFSA - 新闻发布",
-    category: "监管机构",
-    url: "https://www.fsa.go.jp/en/news/index.html",
-    sourceType: "html" as const,
-    selectors: {
-      // 主内容区的 ul > li > a 结构
-      container: "#main ul li",
-      title: "a",
-      link: "a",
-      date: "",  // 日期嵌在标题文本末尾，由 scraper 特殊处理
-    },
-    description: "日本金融厅新闻发布（精确选择器模式，日期从标题提取）",
-  },
-  {
-    name: "FSC 韩国 - 新闻发布",
-    category: "监管机构",
-    url: "https://www.fsc.go.kr/eng/pr010101",
-    sourceType: "html" as const,
-    selectors: {},
-    description: "韩国金融委员会新闻发布（智能抓取模式）",
-  },
-  {
-    // SFC 香港有精确的表格结构：<tr> 包含日期 <td> 和标题 <td>
-    name: "SFC 香港 - 政策声明与公告",
-    category: "监管机构",
-    url: "https://www.sfc.hk/en/News-and-announcements/Policy-statements-and-announcements",
-    sourceType: "html" as const,
-    selectors: {
-      container: "table tr:not(:first-child)",  // 跳过表头行
-      title: "td:nth-child(2) a",
-      link: "td:nth-child(2) a",
-      date: "td:nth-child(1)",
-    },
-    description: "香港证券及期货事务监察委员会政策声明（精确选择器，日期格式 DD Mon YYYY）",
-  },
-  {
-    // SFC 香港 Circulars 页面（通函）
-    name: "SFC 香港 - 通函",
-    category: "监管机构",
-    url: "https://www.sfc.hk/en/News-and-announcements/Circulars",
-    sourceType: "html" as const,
-    selectors: {
-      container: "table tr:not(:first-child)",
-      title: "td:nth-child(2) a",
-      link: "td:nth-child(2) a",
-      date: "td:nth-child(1)",
-    },
-    description: "香港证券及期货事务监察委员会通函（精确选择器）",
-  },
-  {
-    // ESMA 有精确的 <article> 结构，日期在 <div class="search-date"> 中
-    name: "ESMA - 新闻与公告",
-    category: "监管机构",
-    url: "https://www.esma.europa.eu/press-news/esma-news",
-    sourceType: "html" as const,
-    selectors: {
-      container: "article.node--view-mode-teaser",
-      title: ".field--name-title",
-      link: "a[rel='bookmark']",
-      date: ".search-date",
-    },
-    description: "欧洲证券和市场管理局新闻（精确选择器，日期格式 DD/MM/YYYY）",
-  },
-
-  // --- 财经媒体 ---
+  // --- Financial Times ---
   {
     name: "Financial Times - 市场新闻",
     category: "财经媒体",
@@ -266,6 +139,8 @@ export const SOURCE_TEMPLATES = [
     selectors: {},
     description: "英国金融时报全球经济版块 RSS（免费，实时更新）",
   },
+
+  // --- The Economist ---
   {
     name: "The Economist - 金融与经济",
     category: "财经媒体",
@@ -296,7 +171,7 @@ export const SOURCE_TEMPLATES = [
 // 注意：短缩写（<=5字符纯字母）会自动使用 word boundary 匹配，
 // 例如 "SEC" 不会匹配 "section"、"sector"、"second" 等
 export const DEFAULT_KEYWORD_RULES = [
-  // ===== 包含规则 =====
+  // ===== 包含规则（Mondovisione 用） =====
   {
     name: "交易所名称",
     ruleType: "include",
@@ -337,15 +212,12 @@ export const DEFAULT_KEYWORD_RULES = [
     description: "监管机构缩写+全称（短缩写自动 word boundary 匹配）",
     enabled: true,
   },
-
-  // --- 制度改革（精简） ---
   {
     name: "制度改革关键词",
     ruleType: "include",
     logic: "or",
     keywords: JSON.stringify([
       "regulatory reform", "rule change", "rule amendment",
-      "rule proposal", "rule filing",
       "regulatory framework", "new regulation",
       "regulatory sandbox", "consultation paper",
       "market reform", "capital framework"
@@ -353,8 +225,6 @@ export const DEFAULT_KEYWORD_RULES = [
     description: "制度改革、规则修订、监管框架变更",
     enabled: true,
   },
-
-  // --- 重要产品（精简，去掉泛词） ---
   {
     name: "重要产品关键词",
     ruleType: "include",
@@ -368,8 +238,6 @@ export const DEFAULT_KEYWORD_RULES = [
     description: "DR、ETF上市、绿色债券、数字资产等重要产品",
     enabled: true,
   },
-
-  // --- 市场结构（精简） ---
   {
     name: "市场结构关键词",
     ruleType: "include",
@@ -384,8 +252,6 @@ export const DEFAULT_KEYWORD_RULES = [
     description: "市场结构、交易系统、清算结算相关",
     enabled: true,
   },
-
-  // --- 技术改革（精简，去掉 API/real-time/low latency 等泛词） ---
   {
     name: "技术改革关键词",
     ruleType: "include",
@@ -399,8 +265,6 @@ export const DEFAULT_KEYWORD_RULES = [
     description: "技术升级、区块链、网络安全等金融科技",
     enabled: true,
   },
-
-  // --- 跨境合作（精简，去掉 partnership/collaboration/working group 等泛词） ---
   {
     name: "跨境合作关键词",
     ruleType: "include",
@@ -417,7 +281,7 @@ export const DEFAULT_KEYWORD_RULES = [
     enabled: true,
   },
 
-  // ===== 排除规则（增强） =====
+  // ===== 排除规则 =====
   {
     name: "人事变动排除",
     ruleType: "exclude",
